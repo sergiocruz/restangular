@@ -163,6 +163,7 @@ describe("Restangular", function() {
     $httpBackend.whenGET("/customers/").respond(customers);
     $httpBackend.whenGET("http://localhost:8080/customers/").respond(customers);
     $httpBackend.whenGET("api.new.domain/customers/").respond(customers);
+    $httpBackend.whenGET("//api.new.domain/customers").respond(customers);
     $httpBackend.whenGET("/customers/?active=true").respond(customers);
     $httpBackend.whenGET("/customers/publications/?tags=chemistry").respond(publications);
     $httpBackend.whenPUT("/customers/0").respond(function (method, url, data) {
@@ -1132,5 +1133,18 @@ describe("Restangular", function() {
 
       $httpBackend.flush();
     });
+
+    it("should not manipulate base URL when it starts with `//`", function() {
+
+      var newApi = Restangular.withConfig(function(RestangularConfigurer){
+        RestangularConfigurer.setBaseUrl('//api.new.domain');
+      });
+
+      expect(newApi.configuration.baseUrl).toEqual('//api.new.domain');
+      newApi.all("customers").getList();
+      $httpBackend.expectGET('//api.new.domain/customers');
+
+      $httpBackend.flush();
+    })
   });
 });
